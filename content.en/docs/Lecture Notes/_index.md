@@ -1,6 +1,6 @@
 ---
 bookFlatSection: true
-title: Example Site
+title: Lecture Notes
 weight: 1
 ---
 
