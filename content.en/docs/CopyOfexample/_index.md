@@ -1,6 +1,6 @@
 ---
 bookFlatSection: true
-title: Example Site
+title: Projects
 weight: 1
 ---
 
