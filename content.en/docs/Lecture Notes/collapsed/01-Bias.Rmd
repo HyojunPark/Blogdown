@@ -1,0 +1,668 @@
+---
+title: Survival Analysis - Bias
+weight: 1
+---
+
+# Bias assessment
+
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(DT)
+library(tmap)
+
+
+geo01 <- readRDS("~/myonedrive/Projects/Survival/Survival_Lecture/geo01.rds")
+
+
+## mapping
+
+tmap_mode("view")
+
+#S_test01 <-
+
+UT_Obesity_county <- geo01 %>%
+  filter(substr(countyfips, 1, 2) == 49) %>%
+  filter(short_question_text == "Obesity") %>%
+  tm_shape(.) + 
+  tm_fill("Rates_county"
+          #, breaks = c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55)
+          , style = "cont"
+          , palette = "Purples" 
+          #, n = 15
+          , contrast = c(0.1, 0.9)
+          , title = "Obesity Rates (%)"
+          , title.size = 0.8
+          , legend.show = TRUE
+          #, colorNA = "white"
+          #, textNA = "Missing"
+          , legend.is.portrait = FALSE
+          , alpha = 0.6
+  ) +
+  tm_layout(title = "County"
+            , title.size = 1.0
+            , title.position = c("left", "top")
+            , inner.margins = c(0.10, 0.00, 0.10, 0.00) #bottom, left, top, and right margin
+            #, legend.position = c("center", "bottom")
+            , legend.width = 1
+            , legend.format=list(fun=function(x) formatC(x, digits=1, format="f"))
+  ) + 
+  tm_basemap("OpenStreetMap")
+
+UT_Obesity_tract <- geo01 %>%
+  filter(substr(countyfips, 1, 2) == 49) %>%
+  filter(short_question_text == "Obesity") %>%
+  tm_shape(.) + 
+  tm_fill("Rates_tract"
+          #, breaks = c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55)
+          , style = "cont"
+          , palette = "Purples" 
+          #, n = 15
+          , contrast = c(0.1, 0.9)
+          , title = "Obesity Rates (%)"
+          , title.size = 0.8
+          , legend.show = TRUE
+          #, colorNA = "white"
+          #, textNA = "Missing"
+          , legend.is.portrait = FALSE
+          , alpha = 0.6
+  ) +
+  tm_layout(title = "Tract"
+            , title.size = 1.0
+            , title.position = c("left", "top")
+            , inner.margins = c(0.10, 0.00, 0.10, 0.00) #bottom, left, top, and right margin
+            #, legend.position = c("center", "bottom")
+            , legend.width = 1
+            , legend.format=list(fun=function(x) formatC(x, digits=1, format="f"))
+  ) + 
+  tm_basemap("OpenStreetMap")
+
+
+NY_Obesity_county <- geo01 %>%
+  filter(substr(countyfips, 1, 2) == 36) %>%
+  filter(short_question_text == "Obesity") %>%
+  tm_shape(.) + 
+  tm_fill("Rates_county"
+          #, breaks = c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55)
+          , style = "cont"
+          , palette = "Purples" 
+          #, n = 15
+          , contrast = c(0.1, 0.9)
+          , title = "Obesity Rates (%)"
+          , title.size = 0.8
+          , legend.show = TRUE
+          #, colorNA = "white"
+          #, textNA = "Missing"
+          , legend.is.portrait = FALSE
+          , alpha = 0.6
+  ) +
+  tm_layout(title = "County"
+            , title.size = 1.0
+            , title.position = c("left", "top")
+            , inner.margins = c(0.10, 0.00, 0.10, 0.00) #bottom, left, top, and right margin
+            #, legend.position = c("center", "bottom")
+            , legend.width = 1
+            , legend.format=list(fun=function(x) formatC(x, digits=1, format="f"))
+  ) + 
+  tm_basemap("OpenStreetMap")
+
+NY_Obesity_tract <- 
+  geo01 %>%
+  filter(substr(countyfips, 1, 2) == 36) %>%
+  filter(short_question_text == "Obesity") %>%
+  tm_shape(.) + 
+  tm_fill("Rates_tract"
+          #, breaks = c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55)
+          , style = "cont"
+          , palette = "Purples" 
+          #, n = 15
+          , contrast = c(0.1, 0.9)
+          , title = "Obesity Rates (%)"
+          , title.size = 0.8
+          , legend.show = TRUE
+          #, colorNA = "white"
+          #, textNA = "Missing"
+          , legend.is.portrait = FALSE
+          , alpha = 0.6
+  ) +
+  tm_layout(title = "Tract"
+            , title.size = 1.0
+            , title.position = c("left", "top")
+            , inner.margins = c(0.10, 0.00, 0.10, 0.00) #bottom, left, top, and right margin
+            #, legend.position = c("center", "bottom")
+            , legend.width = 1
+            , legend.format=list(fun=function(x) formatC(x, digits=1, format="f"))
+  ) + 
+  tm_basemap("OpenStreetMap")
+
+
+UT_Diabetes_county <- geo01 %>%
+  filter(substr(countyfips, 1, 2) == 49) %>%
+  filter(short_question_text == "Diabetes") %>%
+  tm_shape(.) + 
+  tm_fill("Rates_county"
+          #, breaks = c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55)
+          , style = "cont"
+          , palette = "Purples" 
+          #, n = 15
+          , contrast = c(0.1, 0.9)
+          , title = "Diabetes Rates (%)"
+          , title.size = 0.8
+          , legend.show = TRUE
+          #, colorNA = "white"
+          #, textNA = "Missing"
+          , legend.is.portrait = FALSE
+          , alpha = 0.6
+  ) +
+  tm_layout(title = "County"
+            , title.size = 1.0
+            , title.position = c("left", "top")
+            , inner.margins = c(0.10, 0.00, 0.10, 0.00) #bottom, left, top, and right margin
+            #, legend.position = c("center", "bottom")
+            , legend.width = 1
+            , legend.format=list(fun=function(x) formatC(x, digits=1, format="f"))
+  ) + 
+  tm_basemap("OpenStreetMap")
+
+UT_Diabetes_tract <- geo01 %>%
+  filter(substr(countyfips, 1, 2) == 49) %>%
+  filter(short_question_text == "Diabetes") %>%
+  tm_shape(.) + 
+  tm_fill("Rates_tract"
+          #, breaks = c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55)
+          , style = "cont"
+          , palette = "Purples" 
+          #, n = 15
+          , contrast = c(0.1, 0.9)
+          , title = "Diabetes Rates (%)"
+          , title.size = 0.8
+          , legend.show = TRUE
+          #, colorNA = "white"
+          #, textNA = "Missing"
+          , legend.is.portrait = FALSE
+          , alpha = 0.6
+  ) +
+  tm_layout(title = "Tract"
+            , title.size = 1.0
+            , title.position = c("left", "top")
+            , inner.margins = c(0.10, 0.00, 0.10, 0.00) #bottom, left, top, and right margin
+            #, legend.position = c("center", "bottom")
+            , legend.width = 1
+            , legend.format=list(fun=function(x) formatC(x, digits=1, format="f"))
+  ) + 
+  tm_basemap("OpenStreetMap")
+
+
+NY_Diabetes_county <- geo01 %>%
+  filter(substr(countyfips, 1, 2) == 36) %>%
+  filter(short_question_text == "Diabetes") %>%
+  tm_shape(.) + 
+  tm_fill("Rates_county"
+          #, breaks = c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55)
+          , style = "cont"
+          , palette = "Purples" 
+          #, n = 15
+          , contrast = c(0.1, 0.9)
+          , title = "Diabetes Rates (%)"
+          , title.size = 0.8
+          , legend.show = TRUE
+          #, colorNA = "white"
+          #, textNA = "Missing"
+          , legend.is.portrait = FALSE
+          , alpha = 0.6
+  ) +
+  tm_layout(title = "County"
+            , title.size = 1.0
+            , title.position = c("left", "top")
+            , inner.margins = c(0.10, 0.00, 0.10, 0.00) #bottom, left, top, and right margin
+            #, legend.position = c("center", "bottom")
+            , legend.width = 1
+            , legend.format=list(fun=function(x) formatC(x, digits=1, format="f"))
+  ) + 
+  tm_basemap("OpenStreetMap")
+
+NY_Diabetes_tract <- 
+  geo01 %>%
+  filter(substr(countyfips, 1, 2) == 36) %>%
+  filter(short_question_text == "Diabetes") %>%
+  tm_shape(.) + 
+  tm_fill("Rates_tract"
+          #, breaks = c(0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55)
+          , style = "cont"
+          , palette = "Purples" 
+          #, n = 15
+          , contrast = c(0.1, 0.9)
+          , title = "Diabetes Rates (%)"
+          , title.size = 0.8
+          , legend.show = TRUE
+          #, colorNA = "white"
+          #, textNA = "Missing"
+          , legend.is.portrait = FALSE
+          , alpha = 0.6
+  ) +
+  tm_layout(title = "Tract"
+            , title.size = 1.0
+            , title.position = c("left", "top")
+            , inner.margins = c(0.10, 0.00, 0.10, 0.00) #bottom, left, top, and right margin
+            #, legend.position = c("center", "bottom")
+            , legend.width = 1
+            , legend.format=list(fun=function(x) formatC(x, digits=1, format="f"))
+  ) + 
+  tm_basemap("OpenStreetMap")
+
+
+## Table
+
+Desc01 <- geo01 %>%
+  reframe(
+    State = countyfips
+    , County = countyfips
+    , Measure = short_question_text
+    , "Description" = measure
+    , "Estimates (Tract)" = Rates_tract
+    , "Estimates (County)" = Rates_county
+  ) %>%
+  DT::datatable(
+    .
+    , caption = "Table"
+    , filter = "top"
+    , options = list(search = list(regex = TRUE))
+    ) %>%
+  formatRound(columns=c("Estimates (Tract)"
+                        , "Estimates (County)")
+              , digits=1)
+```
+
+
+The maps demonstrate the geographic gradients of obesity rate in the state of Utah. The left panel is estimates at the census tract level, while the right panel is estimates at the county level.
+
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+# Dropdown manu
+#
+# devtools::install_github("walkerke/bsselectR")
+# 
+# 
+# library(bsselectR)
+# 
+# quotes <- c("Look deep into nature, and then you will understand everything better.", 
+#             "A fool thinks himself to be wise, but a wise man knows himself to be a fool.", 
+#             "My mission in life is not merely to survive, but to thrive; and to do so with some passion, 
+#             some compassion, some humor, and some style.")
+# 
+# quotes <- setNames(quotes, c("Einstein", "Shakespeare", "Angelou"))
+# 
+# bsselect(quotes, type = "text", height = 200)
+
+
+tmap_arrange(UT_Obesity_tract, UT_Obesity_county, ncol=2)
+```
+
+UT, Diabetes maps
+
+```{r}
+tmap_arrange(UT_Diabetes_tract, UT_Diabetes_county, ncol=2)
+```
+
+NY, Obesity maps
+
+```{r}
+tmap_arrange(NY_Obesity_tract, NY_Obesity_county, ncol=2)
+```
+
+NY, Diabetes maps
+
+```{r}
+tmap_arrange(NY_Diabetes_tract, NY_Diabetes_county, ncol=2)
+```
+
+
+
+The following table presents the census tract level rates of obesity and Diabetes in the state of Utah.
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+Desc01
+```
+
+
+
+\newpage
+## Bias due to omitted confounders
+
+$$y_i = \beta_0 + \beta_1 x_i + \beta_2 x_2 + \dots + \epsilon_i; \;\; for \;\; i=1, \dots, n$$
+
+
+where the errors $\epsilon_i \sim N(0, \sigma^2)$ with independent and identically distributed (*i.i.d.*)
+
+Let's assume the following association is true (i.e., gold standard) without any selection bias, measurement bias, and other unmeasured confoundings.
+
+```{r}
+N <- 100000
+C <- rnorm(N)
+X <- .5 * C + rnorm(N)
+Y <- .3 * C + .4 * X + rnorm(N)
+```
+
+
+### Gold standard
+
+With the correct model specification (i.e., $C$ as a confounder), we get an unbiased estimate of $X$ on $Y$.
+
+
+```{r}
+# Gold standard
+glm.unbiased <- glm(Y~X + C, family="gaussian")
+summary(glm.unbiased)
+```
+
+
+### Misspecified model: a confounder, $C$, was omitted from the model
+
+By omitting $C$, the estimate of $X$ was biased either "away from" or "towards to" the null
+
+```{r}
+# C was omitted
+glm.unbiased <- glm(Y~X, family="gaussian")
+summary(glm.unbiased)
+```
+
+### Bias "away from" or "towards to" the null?
+
+```{r}
+N <- 100000
+C <- rnorm(N)
+X <- -.5 * C + rnorm(N)
+Y <- -.3 * C + .4 * X + rnorm(N)
+```
+
+```{r}
+# C was omitted
+glm.unbiased <- glm(Y~X + C, family="gaussian")
+summary(glm.unbiased)
+```
+
+
+```{r}
+glm.unbiased <- glm(Y~X, family="gaussian")
+summary(glm.unbiased)
+```
+
+### A $C$ is not a confounder on $X$ and $Y$
+
+```{r}
+N <- 100000
+C <- rnorm(N)
+X <- rnorm(N)
+Y <- .4 * X + rnorm(N)
+```
+
+
+### Correct model specification: Without $C$
+
+```{r}
+glm.unbiased <- glm(Y~X, family="gaussian")
+summary(glm.unbiased)
+```
+
+
+### Misspecified model with $C$
+
+```{r}
+glm.unbiased <- glm(Y~X + C, family="gaussian")
+summary(glm.unbiased)
+```
+
+
+### A $C$ is a colloder on $X$ and $Y$
+
+```{r}
+N <- 100000
+X <- rnorm(N)
+Y <- .7 * X + rnorm(N)
+C <- 1.2 * X + .6 * Y + rnorm(N)
+```
+
+
+
+### Correct model specification: Without $C$
+
+```{r}
+glm.unbiased <- glm(Y~X, family="gaussian")
+summary(glm.unbiased)
+```
+
+
+### Misspecified model with $C$
+
+This is one of examples of selection bias. For example, let's say, $X$ is Education, $Y$ is income, and $C$ is social welfare program. People at lower education (i.e., high risk group in terms of exposure) and lower income (i.e., higher risk group in terms of outcome) are more likely to register social welfare program. If survey was conducted based on the registered social welfare program, the "estimated" association from this "disproportionally selected" respondents are likely biased.
+
+
+```{r}
+glm.unbiased <- glm(Y~X + C, family="gaussian")
+summary(glm.unbiased)
+```
+
+
+
+
+## Overadjustment bias
+
+Please note that this is not a comprehensive example; only reflect one aspect of potential overadjustement bias.
+
+Let's assume a model with $M$ as a mediator.
+
+```{r}
+N <- 100000
+X <- rnorm(N)
+M <- .5 * X + rnorm(N)
+Y <- .3 * X + .4 * M + rnorm(N)
+```
+
+
+## Total effect
+
+```{r}
+glm.unbiased <- glm(Y~X, family="gaussian")
+summary(glm.unbiased)
+```
+
+## Overadjustment
+
+```{r}
+glm.unbiased <- glm(Y~X + M, family="gaussian")
+summary(glm.unbiased)
+```
+
+
+## Logistic models
+
+### Sex as a Confounder, $C$
+
+```{r}
+MYY <- data.frame(Sex = "Male",
+                  Smoking = "Yes",
+                  Cancer = 1,
+                  freq = 5
+                  )
+
+MYN <- data.frame(Sex = "Male",
+                  Smoking = "Yes",
+                  Cancer = 0,
+                  freq = 8
+                  )
+
+MNY <- data.frame(Sex = "Male",
+                  Smoking = "No",
+                  Cancer = 1,
+                  freq = 45
+                  )
+
+MNN <- data.frame(Sex = "Male",
+                  Smoking = "No",
+                  Cancer = 0,
+                  freq = 72
+                  )
+
+
+FYY <- data.frame(Sex = "Female",
+                  Smoking = "Yes",
+                  Cancer = 1,
+                  freq = 25
+                  )
+
+FYN <- data.frame(Sex = "Female",
+                  Smoking = "Yes",
+                  Cancer = 0,
+                  freq = 10
+                  )
+
+FNY <- data.frame(Sex = "Female",
+                  Smoking = "No",
+                  Cancer = 1,
+                  freq = 25
+                  )
+
+FNN <- data.frame(Sex = "Female",
+                  Smoking = "No",
+                  Cancer = 0,
+                  freq = 10
+                  )
+
+Ex_confounder <- rbind(MYY, MYN, MNY, MNN, FYY, FYN, FNY, FNN)
+
+
+```
+
+
+Convert Freq table to raw data
+
+```{r}
+library(tidyr)
+raw_confounder <- Ex_confounder %>% 
+  uncount(freq)
+```
+
+
+
+```{r}
+glm.unbiased <- glm(Cancer ~ Smoking , family=binomial(link = "logit"), data=raw_confounder)
+summary(glm.unbiased)
+
+```
+
+
+- Full model:
+
+```{r}
+glm_logit <- glm(Cancer ~ Smoking + Sex , family=binomial(link = "logit"), data=raw_confounder)
+glm_logit
+```
+
+
+- Stratified models
+
+```{r}
+## For males
+raw_confounder_M <- raw_confounder[ which(raw_confounder$Sex=='Male'), ]
+glm_logit_m <- glm(Cancer ~ Smoking , family=binomial(link = "logit"), data=raw_confounder_M)
+glm_logit_m
+
+
+# For females
+raw_confounder_F <- raw_confounder[ which(raw_confounder$Sex=='Female'), ]
+glm_logit_f <- glm(Cancer ~ Smoking , family=binomial(link = "logit"), data=raw_confounder_F)
+glm_logit_f
+
+```
+
+
+### Sex as a Moderator, $M$
+
+```{r}
+MYY <- data.frame(Sex = "Male",
+                  Smoking = "Yes",
+                  Cancer = 1,
+                  freq = 5
+                  )
+
+MYN <- data.frame(Sex = "Male",
+                  Smoking = "Yes",
+                  Cancer = 0,
+                  freq = 4
+                  )
+
+MNY <- data.frame(Sex = "Male",
+                  Smoking = "No",
+                  Cancer = 1,
+                  freq = 45
+                  )
+
+MNN <- data.frame(Sex = "Male",
+                  Smoking = "No",
+                  Cancer = 0,
+                  freq = 68
+                  )
+
+
+FYY <- data.frame(Sex = "Female",
+                  Smoking = "Yes",
+                  Cancer = 1,
+                  freq = 25
+                  )
+
+FYN <- data.frame(Sex = "Female",
+                  Smoking = "Yes",
+                  Cancer = 0,
+                  freq = 14
+                  )
+
+FNY <- data.frame(Sex = "Female",
+                  Smoking = "No",
+                  Cancer = 1,
+                  freq = 25
+                  )
+
+FNN <- data.frame(Sex = "Female",
+                  Smoking = "No",
+                  Cancer = 0,
+                  freq = 14
+                  )
+
+Ex_moderator <- rbind(MYY, MYN, MNY, MNN, FYY, FYN, FNY, FNN)
+
+
+```
+
+
+Convert Freq table to raw data
+
+```{r}
+library(tidyr)
+raw_moderator <- Ex_moderator %>% 
+  uncount(freq)
+```
+
+
+- Full model:
+
+```{r}
+glm_logit <- glm(Cancer ~ Smoking , family=binomial(link = "logit"), data=raw_moderator)
+glm_logit
+```
+
+- Stratified models
+
+```{r}
+## For males
+raw_moderator_M <- raw_moderator[ which(raw_moderator$Sex=='Male'), ]
+glm_logit_m <- glm(Cancer ~ Smoking , family=binomial(link = "logit"), data=raw_moderator_M)
+glm_logit_m
+
+
+# For females
+raw_moderator_F <- raw_moderator[ which(raw_moderator$Sex=='Female'), ]
+glm_logit_f <- glm(Cancer ~ Smoking , family=binomial(link = "logit"), data=raw_moderator_F)
+glm_logit_f
+
+```
+

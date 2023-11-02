@@ -1,0 +1,523 @@
+---
+title: Survival Analysis - Bias
+weight: 1
+---
+
+
+
+<div id="bias-assessment" class="section level1">
+<h1>Bias assessment</h1>
+<p>The maps demonstrate the geographic gradients of obesity rate in the state of Utah. The left panel is estimates at the census tract level, while the right panel is estimates at the county level.</p>
+<div style="page-break-after: always;"></div>
+<div id="bias-due-to-omitted-confounders" class="section level2">
+<h2>Bias due to omitted confounders</h2>
+<p><span class="math display">\[y_i = \beta_0 + \beta_1 x_i + \beta_2 x_2 + \dots + \epsilon_i; \;\; for \;\; i=1, \dots, n\]</span></p>
+<p>where the errors <span class="math inline">\(\epsilon_i \sim N(0, \sigma^2)\)</span> with independent and identically distributed (<em>i.i.d.</em>)</p>
+<p>Let’s assume the following association is true (i.e., gold standard) without any selection bias, measurement bias, and other unmeasured confoundings.</p>
+<pre class="r"><code>N &lt;- 100000
+C &lt;- rnorm(N)
+X &lt;- .5 * C + rnorm(N)
+Y &lt;- .3 * C + .4 * X + rnorm(N)</code></pre>
+<div id="gold-standard" class="section level3">
+<h3>Gold standard</h3>
+<p>With the correct model specification (i.e., <span class="math inline">\(C\)</span> as a confounder), we get an unbiased estimate of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span>.</p>
+<pre class="r"><code># Gold standard
+glm.unbiased &lt;- glm(Y~X + C, family=&quot;gaussian&quot;)
+summary(glm.unbiased)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Y ~ X + C, family = &quot;gaussian&quot;)
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -0.005761   0.003166  -1.819   0.0689 .  
+## X            0.403384   0.003159 127.688   &lt;2e-16 ***
+## C            0.301401   0.003538  85.180   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 1.002562)
+## 
+##     Null deviance: 141893  on 99999  degrees of freedom
+## Residual deviance: 100253  on 99997  degrees of freedom
+## AIC: 284049
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+</div>
+<div id="misspecified-model-a-confounder-c-was-omitted-from-the-model" class="section level3">
+<h3>Misspecified model: a confounder, <span class="math inline">\(C\)</span>, was omitted from the model</h3>
+<p>By omitting <span class="math inline">\(C\)</span>, the estimate of <span class="math inline">\(X\)</span> was biased either “away from” or “towards to” the null</p>
+<pre class="r"><code># C was omitted
+glm.unbiased &lt;- glm(Y~X, family=&quot;gaussian&quot;)
+summary(glm.unbiased)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Y ~ X, family = &quot;gaussian&quot;)
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -0.004643   0.003279  -1.416    0.157    
+## X            0.523447   0.002928 178.772   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 1.075295)
+## 
+##     Null deviance: 141893  on 99999  degrees of freedom
+## Residual deviance: 107527  on 99998  degrees of freedom
+## AIC: 291051
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+</div>
+<div id="bias-away-from-or-towards-to-the-null" class="section level3">
+<h3>Bias “away from” or “towards to” the null?</h3>
+<pre class="r"><code>N &lt;- 100000
+C &lt;- rnorm(N)
+X &lt;- -.5 * C + rnorm(N)
+Y &lt;- -.3 * C + .4 * X + rnorm(N)</code></pre>
+<pre class="r"><code># C was omitted
+glm.unbiased &lt;- glm(Y~X + C, family=&quot;gaussian&quot;)
+summary(glm.unbiased)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Y ~ X + C, family = &quot;gaussian&quot;)
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -0.001455   0.003166  -0.459    0.646    
+## X            0.399114   0.003168 125.986   &lt;2e-16 ***
+## C           -0.298614   0.003527 -84.656   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 1.002496)
+## 
+##     Null deviance: 141186  on 99999  degrees of freedom
+## Residual deviance: 100247  on 99997  degrees of freedom
+## AIC: 284042
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<pre class="r"><code>glm.unbiased &lt;- glm(Y~X, family=&quot;gaussian&quot;)
+summary(glm.unbiased)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Y ~ X, family = &quot;gaussian&quot;)
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -0.001373   0.003278  -0.419    0.675    
+## X            0.519473   0.002931 177.255   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 1.074333)
+## 
+##     Null deviance: 141186  on 99999  degrees of freedom
+## Residual deviance: 107431  on 99998  degrees of freedom
+## AIC: 290962
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+</div>
+<div id="a-c-is-not-a-confounder-on-x-and-y" class="section level3">
+<h3>A <span class="math inline">\(C\)</span> is not a confounder on <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span></h3>
+<pre class="r"><code>N &lt;- 100000
+C &lt;- rnorm(N)
+X &lt;- rnorm(N)
+Y &lt;- .4 * X + rnorm(N)</code></pre>
+</div>
+<div id="correct-model-specification-without-c" class="section level3">
+<h3>Correct model specification: Without <span class="math inline">\(C\)</span></h3>
+<pre class="r"><code>glm.unbiased &lt;- glm(Y~X, family=&quot;gaussian&quot;)
+summary(glm.unbiased)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Y ~ X, family = &quot;gaussian&quot;)
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -0.003192   0.003157  -1.011    0.312    
+## X            0.403951   0.003162 127.771   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 0.9965773)
+## 
+##     Null deviance: 115925  on 99999  degrees of freedom
+## Residual deviance:  99656  on 99998  degrees of freedom
+## AIC: 283449
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+</div>
+<div id="misspecified-model-with-c" class="section level3">
+<h3>Misspecified model with <span class="math inline">\(C\)</span></h3>
+<pre class="r"><code>glm.unbiased &lt;- glm(Y~X + C, family=&quot;gaussian&quot;)
+summary(glm.unbiased)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Y ~ X + C, family = &quot;gaussian&quot;)
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -0.003186   0.003157  -1.009    0.313    
+## X            0.403956   0.003162 127.773   &lt;2e-16 ***
+## C            0.004386   0.003153   1.391    0.164    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 0.9965679)
+## 
+##     Null deviance: 115925  on 99999  degrees of freedom
+## Residual deviance:  99654  on 99997  degrees of freedom
+## AIC: 283449
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+</div>
+<div id="a-c-is-a-colloder-on-x-and-y" class="section level3">
+<h3>A <span class="math inline">\(C\)</span> is a colloder on <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span></h3>
+<pre class="r"><code>N &lt;- 100000
+X &lt;- rnorm(N)
+Y &lt;- .7 * X + rnorm(N)
+C &lt;- 1.2 * X + .6 * Y + rnorm(N)</code></pre>
+</div>
+<div id="correct-model-specification-without-c-1" class="section level3">
+<h3>Correct model specification: Without <span class="math inline">\(C\)</span></h3>
+<pre class="r"><code>glm.unbiased &lt;- glm(Y~X, family=&quot;gaussian&quot;)
+summary(glm.unbiased)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Y ~ X, family = &quot;gaussian&quot;)
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -0.0005298  0.0031654  -0.167    0.867    
+## X            0.6961160  0.0031804 218.879   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 1.001976)
+## 
+##     Null deviance: 148198  on 99999  degrees of freedom
+## Residual deviance: 100196  on 99998  degrees of freedom
+## AIC: 283989
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+</div>
+<div id="misspecified-model-with-c-1" class="section level3">
+<h3>Misspecified model with <span class="math inline">\(C\)</span></h3>
+<p>This is one of examples of selection bias. For example, let’s say, <span class="math inline">\(X\)</span> is Education, <span class="math inline">\(Y\)</span> is income, and <span class="math inline">\(C\)</span> is social welfare program. People at lower education (i.e., high risk group in terms of exposure) and lower income (i.e., higher risk group in terms of outcome) are more likely to register social welfare program. If survey was conducted based on the registered social welfare program, the “estimated” association from this “disproportionally selected” respondents are likely biased.</p>
+<pre class="r"><code>glm.unbiased &lt;- glm(Y~X + C, family=&quot;gaussian&quot;)
+summary(glm.unbiased)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Y ~ X + C, family = &quot;gaussian&quot;)
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.0002309  0.0027152   0.085    0.932    
+## X           -0.0201875  0.0046617  -4.330 1.49e-05 ***
+## C            0.4424627  0.0023350 189.493  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 0.7372497)
+## 
+##     Null deviance: 148198  on 99999  degrees of freedom
+## Residual deviance:  73723  on 99997  degrees of freedom
+## AIC: 253310
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+</div>
+</div>
+<div id="overadjustment-bias" class="section level2">
+<h2>Overadjustment bias</h2>
+<p>Please note that this is not a comprehensive example; only reflect one aspect of potential overadjustement bias.</p>
+<p>Let’s assume a model with <span class="math inline">\(M\)</span> as a mediator.</p>
+<pre class="r"><code>N &lt;- 100000
+X &lt;- rnorm(N)
+M &lt;- .5 * X + rnorm(N)
+Y &lt;- .3 * X + .4 * M + rnorm(N)</code></pre>
+</div>
+<div id="total-effect" class="section level2">
+<h2>Total effect</h2>
+<pre class="r"><code>glm.unbiased &lt;- glm(Y~X, family=&quot;gaussian&quot;)
+summary(glm.unbiased)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Y ~ X, family = &quot;gaussian&quot;)
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -0.0003269  0.0034029  -0.096    0.923    
+## X            0.4991605  0.0034087 146.437   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 1.157968)
+## 
+##     Null deviance: 140626  on 99999  degrees of freedom
+## Residual deviance: 115794  on 99998  degrees of freedom
+## AIC: 298458
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+</div>
+<div id="overadjustment" class="section level2">
+<h2>Overadjustment</h2>
+<pre class="r"><code>glm.unbiased &lt;- glm(Y~X + M, family=&quot;gaussian&quot;)
+summary(glm.unbiased)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Y ~ X + M, family = &quot;gaussian&quot;)
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 0.001832   0.003162   0.579    0.562    
+## X           0.301039   0.003537  85.103   &lt;2e-16 ***
+## M           0.397473   0.003160 125.786   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 0.9997882)
+## 
+##     Null deviance: 140626  on 99999  degrees of freedom
+## Residual deviance:  99976  on 99997  degrees of freedom
+## AIC: 283772
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+</div>
+<div id="logistic-models" class="section level2">
+<h2>Logistic models</h2>
+<div id="sex-as-a-confounder-c" class="section level3">
+<h3>Sex as a Confounder, <span class="math inline">\(C\)</span></h3>
+<pre class="r"><code>MYY &lt;- data.frame(Sex = &quot;Male&quot;,
+                  Smoking = &quot;Yes&quot;,
+                  Cancer = 1,
+                  freq = 5
+                  )
+
+MYN &lt;- data.frame(Sex = &quot;Male&quot;,
+                  Smoking = &quot;Yes&quot;,
+                  Cancer = 0,
+                  freq = 8
+                  )
+
+MNY &lt;- data.frame(Sex = &quot;Male&quot;,
+                  Smoking = &quot;No&quot;,
+                  Cancer = 1,
+                  freq = 45
+                  )
+
+MNN &lt;- data.frame(Sex = &quot;Male&quot;,
+                  Smoking = &quot;No&quot;,
+                  Cancer = 0,
+                  freq = 72
+                  )
+
+
+FYY &lt;- data.frame(Sex = &quot;Female&quot;,
+                  Smoking = &quot;Yes&quot;,
+                  Cancer = 1,
+                  freq = 25
+                  )
+
+FYN &lt;- data.frame(Sex = &quot;Female&quot;,
+                  Smoking = &quot;Yes&quot;,
+                  Cancer = 0,
+                  freq = 10
+                  )
+
+FNY &lt;- data.frame(Sex = &quot;Female&quot;,
+                  Smoking = &quot;No&quot;,
+                  Cancer = 1,
+                  freq = 25
+                  )
+
+FNN &lt;- data.frame(Sex = &quot;Female&quot;,
+                  Smoking = &quot;No&quot;,
+                  Cancer = 0,
+                  freq = 10
+                  )
+
+Ex_confounder &lt;- rbind(MYY, MYN, MNY, MNN, FYY, FYN, FNY, FNN)</code></pre>
+<p>Convert Freq table to raw data</p>
+<pre class="r"><code>library(tidyr)
+raw_confounder &lt;- Ex_confounder %&gt;% 
+  uncount(freq)</code></pre>
+<pre class="r"><code>glm.unbiased &lt;- glm(Cancer ~ Smoking , family=binomial(link = &quot;logit&quot;), data=raw_confounder)
+summary(glm.unbiased)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = Cancer ~ Smoking, family = binomial(link = &quot;logit&quot;), 
+##     data = raw_confounder)
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)  
+## (Intercept)  -0.1582     0.1627  -0.972   0.3309  
+## SmokingYes    0.6690     0.3397   1.970   0.0489 *
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 277.26  on 199  degrees of freedom
+## Residual deviance: 273.28  on 198  degrees of freedom
+## AIC: 277.28
+## 
+## Number of Fisher Scoring iterations: 4</code></pre>
+<ul>
+<li>Full model:</li>
+</ul>
+<pre class="r"><code>glm_logit &lt;- glm(Cancer ~ Smoking + Sex , family=binomial(link = &quot;logit&quot;), data=raw_confounder)
+glm_logit</code></pre>
+<pre><code>## 
+## Call:  glm(formula = Cancer ~ Smoking + Sex, family = binomial(link = &quot;logit&quot;), 
+##     data = raw_confounder)
+## 
+## Coefficients:
+## (Intercept)   SmokingYes      SexMale  
+##   9.163e-01    4.266e-15   -1.386e+00  
+## 
+## Degrees of Freedom: 199 Total (i.e. Null);  197 Residual
+## Null Deviance:	    277.3 
+## Residual Deviance: 257 	AIC: 263</code></pre>
+<ul>
+<li>Stratified models</li>
+</ul>
+<pre class="r"><code>## For males
+raw_confounder_M &lt;- raw_confounder[ which(raw_confounder$Sex==&#39;Male&#39;), ]
+glm_logit_m &lt;- glm(Cancer ~ Smoking , family=binomial(link = &quot;logit&quot;), data=raw_confounder_M)
+glm_logit_m</code></pre>
+<pre><code>## 
+## Call:  glm(formula = Cancer ~ Smoking, family = binomial(link = &quot;logit&quot;), 
+##     data = raw_confounder_M)
+## 
+## Coefficients:
+## (Intercept)   SmokingYes  
+##  -4.700e-01    6.672e-16  
+## 
+## Degrees of Freedom: 129 Total (i.e. Null);  128 Residual
+## Null Deviance:	    173.2 
+## Residual Deviance: 173.2 	AIC: 177.2</code></pre>
+<pre class="r"><code># For females
+raw_confounder_F &lt;- raw_confounder[ which(raw_confounder$Sex==&#39;Female&#39;), ]
+glm_logit_f &lt;- glm(Cancer ~ Smoking , family=binomial(link = &quot;logit&quot;), data=raw_confounder_F)
+glm_logit_f</code></pre>
+<pre><code>## 
+## Call:  glm(formula = Cancer ~ Smoking, family = binomial(link = &quot;logit&quot;), 
+##     data = raw_confounder_F)
+## 
+## Coefficients:
+## (Intercept)   SmokingYes  
+##   9.163e-01    9.400e-16  
+## 
+## Degrees of Freedom: 69 Total (i.e. Null);  68 Residual
+## Null Deviance:	    83.76 
+## Residual Deviance: 83.76 	AIC: 87.76</code></pre>
+</div>
+<div id="sex-as-a-moderator-m" class="section level3">
+<h3>Sex as a Moderator, <span class="math inline">\(M\)</span></h3>
+<pre class="r"><code>MYY &lt;- data.frame(Sex = &quot;Male&quot;,
+                  Smoking = &quot;Yes&quot;,
+                  Cancer = 1,
+                  freq = 5
+                  )
+
+MYN &lt;- data.frame(Sex = &quot;Male&quot;,
+                  Smoking = &quot;Yes&quot;,
+                  Cancer = 0,
+                  freq = 4
+                  )
+
+MNY &lt;- data.frame(Sex = &quot;Male&quot;,
+                  Smoking = &quot;No&quot;,
+                  Cancer = 1,
+                  freq = 45
+                  )
+
+MNN &lt;- data.frame(Sex = &quot;Male&quot;,
+                  Smoking = &quot;No&quot;,
+                  Cancer = 0,
+                  freq = 68
+                  )
+
+
+FYY &lt;- data.frame(Sex = &quot;Female&quot;,
+                  Smoking = &quot;Yes&quot;,
+                  Cancer = 1,
+                  freq = 25
+                  )
+
+FYN &lt;- data.frame(Sex = &quot;Female&quot;,
+                  Smoking = &quot;Yes&quot;,
+                  Cancer = 0,
+                  freq = 14
+                  )
+
+FNY &lt;- data.frame(Sex = &quot;Female&quot;,
+                  Smoking = &quot;No&quot;,
+                  Cancer = 1,
+                  freq = 25
+                  )
+
+FNN &lt;- data.frame(Sex = &quot;Female&quot;,
+                  Smoking = &quot;No&quot;,
+                  Cancer = 0,
+                  freq = 14
+                  )
+
+Ex_moderator &lt;- rbind(MYY, MYN, MNY, MNN, FYY, FYN, FNY, FNN)</code></pre>
+<p>Convert Freq table to raw data</p>
+<pre class="r"><code>library(tidyr)
+raw_moderator &lt;- Ex_moderator %&gt;% 
+  uncount(freq)</code></pre>
+<ul>
+<li>Full model:</li>
+</ul>
+<pre class="r"><code>glm_logit &lt;- glm(Cancer ~ Smoking , family=binomial(link = &quot;logit&quot;), data=raw_moderator)
+glm_logit</code></pre>
+<pre><code>## 
+## Call:  glm(formula = Cancer ~ Smoking, family = binomial(link = &quot;logit&quot;), 
+##     data = raw_moderator)
+## 
+## Coefficients:
+## (Intercept)   SmokingYes  
+##     -0.1582       0.6690  
+## 
+## Degrees of Freedom: 199 Total (i.e. Null);  198 Residual
+## Null Deviance:	    277.3 
+## Residual Deviance: 273.3 	AIC: 277.3</code></pre>
+<ul>
+<li>Stratified models</li>
+</ul>
+<pre class="r"><code>## For males
+raw_moderator_M &lt;- raw_moderator[ which(raw_moderator$Sex==&#39;Male&#39;), ]
+glm_logit_m &lt;- glm(Cancer ~ Smoking , family=binomial(link = &quot;logit&quot;), data=raw_moderator_M)
+glm_logit_m</code></pre>
+<pre><code>## 
+## Call:  glm(formula = Cancer ~ Smoking, family = binomial(link = &quot;logit&quot;), 
+##     data = raw_moderator_M)
+## 
+## Coefficients:
+## (Intercept)   SmokingYes  
+##     -0.4128       0.6360  
+## 
+## Degrees of Freedom: 121 Total (i.e. Null);  120 Residual
+## Null Deviance:	    165.1 
+## Residual Deviance: 164.3 	AIC: 168.3</code></pre>
+<pre class="r"><code># For females
+raw_moderator_F &lt;- raw_moderator[ which(raw_moderator$Sex==&#39;Female&#39;), ]
+glm_logit_f &lt;- glm(Cancer ~ Smoking , family=binomial(link = &quot;logit&quot;), data=raw_moderator_F)
+glm_logit_f</code></pre>
+<pre><code>## 
+## Call:  glm(formula = Cancer ~ Smoking, family = binomial(link = &quot;logit&quot;), 
+##     data = raw_moderator_F)
+## 
+## Coefficients:
+## (Intercept)   SmokingYes  
+##   5.798e-01   -2.621e-16  
+## 
+## Degrees of Freedom: 77 Total (i.e. Null);  76 Residual
+## Null Deviance:	    101.8 
+## Residual Deviance: 101.8 	AIC: 105.8</code></pre>
+</div>
+</div>
+</div>
