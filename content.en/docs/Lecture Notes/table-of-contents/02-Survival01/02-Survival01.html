@@ -1,0 +1,450 @@
+---
+title: Survival
+weight: 1
+---
+
+
+
+<div id="survival-analyses-introduction" class="section level1">
+<h1>Survival Analyses: Introduction</h1>
+<div id="set-packages-and-library" class="section level2">
+<h2>Set packages and library</h2>
+</div>
+<div id="dataset" class="section level2">
+<h2>dataset</h2>
+<p>The <strong>child</strong> dataset in <strong>eha</strong> package</p>
+<pre class="r"><code>summary(child) # descriptive statistics</code></pre>
+<pre><code>##        id              m.id            sex           socBranch    
+##  Min.   :     9   Min.   :    55   male  :13676   official:  610  
+##  1st Qu.:249504   1st Qu.:248826   female:12898   farming :18641  
+##  Median :500126   Median :504920                  business:  318  
+##  Mean   :500080   Mean   :501874                  worker  : 7005  
+##  3rd Qu.:750266   3rd Qu.:752827                                  
+##  Max.   :999976   Max.   :999932                                  
+##    birthdate              enter        exit            event        illeg      
+##  Min.   :1850-01-01   Min.   :0   Min.   : 0.003   Min.   :0.0000   no :24567  
+##  1st Qu.:1861-01-05   1st Qu.:0   1st Qu.:15.000   1st Qu.:0.0000   yes: 2007  
+##  Median :1870-08-08   Median :0   Median :15.000   Median :0.0000              
+##  Mean   :1869-06-09   Mean   :0   Mean   :12.231   Mean   :0.2113              
+##  3rd Qu.:1878-05-08   3rd Qu.:0   3rd Qu.:15.000   3rd Qu.:0.0000              
+##  Max.   :1884-12-31   Max.   :0   Max.   :15.000   Max.   :1.0000              
+##      m.age      
+##  Min.   :15.83  
+##  1st Qu.:27.18  
+##  Median :31.79  
+##  Mean   :32.03  
+##  3rd Qu.:36.74  
+##  Max.   :50.86</code></pre>
+<pre class="r"><code>str(child) # structure</code></pre>
+<pre><code>## &#39;data.frame&#39;:	26574 obs. of  10 variables:
+##  $ id       : int  9 150 158 178 263 342 363 393 408 486 ...
+##  $ m.id     : int  246606 377744 118277 715337 978617 282943 341341 840879 586140 564736 ...
+##  $ sex      : Factor w/ 2 levels &quot;male&quot;,&quot;female&quot;: 1 1 1 1 2 1 1 1 2 2 ...
+##  $ socBranch: Factor w/ 4 levels &quot;official&quot;,&quot;farming&quot;,..: 2 2 4 2 4 2 2 2 2 2 ...
+##  $ birthdate: Date, format: &quot;1853-05-23&quot; &quot;1853-07-19&quot; ...
+##  $ enter    : num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ exit     : num  15 15 15 15 0.559 0.315 15 15 15 15 ...
+##  $ event    : num  0 0 0 0 1 1 0 0 0 0 ...
+##  $ illeg    : Factor w/ 2 levels &quot;no&quot;,&quot;yes&quot;: 1 1 1 1 1 1 1 1 1 2 ...
+##  $ m.age    : num  35 30.6 29.3 41.2 42.1 ...</code></pre>
+<pre class="r"><code>head(child) # preview</code></pre>
+<pre><code>##      id   m.id    sex socBranch  birthdate enter   exit event illeg  m.age
+## 3     9 246606   male   farming 1853-05-23     0 15.000     0    no 35.009
+## 42  150 377744   male   farming 1853-07-19     0 15.000     0    no 30.609
+## 47  158 118277   male    worker 1861-11-17     0 15.000     0    no 29.320
+## 54  178 715337   male   farming 1872-11-16     0 15.000     0    no 41.183
+## 78  263 978617 female    worker 1855-07-19     0  0.559     1    no 42.138
+## 102 342 282943   male   farming 1855-09-29     0  0.315     1    no 32.931</code></pre>
+</div>
+<div id="nonparametric-estimation" class="section level2">
+<h2>Nonparametric estimation</h2>
+<div id="data-for-nonparametric-models" class="section level3">
+<h3>Data for nonparametric models</h3>
+<p>The following code creates a set of vector for survival analysis. It contains 5 individuals’ survival time. <span class="math inline">\(1\)</span> is an event (i.e., failure, death) and <span class="math inline">\(0\)</span> is a cencored case.</p>
+<pre class="r"><code>tt &lt;- c(7,6,6,5,2,4)
+cens &lt;- c(0,1,0,0,1,1)
+
+Surv(tt,cens)</code></pre>
+<pre><code>## [1] 7+ 6  6+ 5+ 2  4</code></pre>
+<pre class="r"><code>aaa &lt;- Surv(tt,cens) # demonstration only for checking how survival dataset was constructed
+
+aaa</code></pre>
+<pre><code>## [1] 7+ 6  6+ 5+ 2  4</code></pre>
+</div>
+<div id="kaplan-meier-estimator" class="section level3">
+<h3>Kaplan-Meier estimator</h3>
+<pre class="r"><code>## Models
+result.km &lt;- survfit(Surv(tt,cens)~1,
+                     conf.type=&quot;log-log&quot;)
+
+## Table
+result.km</code></pre>
+<pre><code>## Call: survfit(formula = Surv(tt, cens) ~ 1, conf.type = &quot;log-log&quot;)
+## 
+##      n events median 0.95LCL 0.95UCL
+## [1,] 6      3      6       2      NA</code></pre>
+<pre class="r"><code>summary(result.km)</code></pre>
+<pre><code>## Call: survfit(formula = Surv(tt, cens) ~ 1, conf.type = &quot;log-log&quot;)
+## 
+##  time n.risk n.event survival std.err lower 95% CI upper 95% CI
+##     2      6       1    0.833   0.152       0.2731        0.975
+##     4      5       1    0.667   0.192       0.1946        0.904
+##     6      3       1    0.444   0.222       0.0662        0.785</code></pre>
+<pre class="r"><code>## Plots
+par(mfrow = c(1, 2))# Two panels, &quot;one row, two columns&quot;.
+plot(result.km,
+     ylab = &quot;Survival probability&quot;,
+     xlab = &quot;Time&quot;,
+     mark.time = T,
+     main=&quot;KM survival curve&quot;)
+abline(h = 0.5, col = &quot;sienna&quot;, lty = 3)
+plot(result.km,
+     ylab = &quot;Cumulative hazard&quot;,
+     xlab = &quot;Time&quot;,
+     mark.time = T,
+     fun=&quot;cumhaz&quot;,
+     main=&quot;KM cumulative hazard curve&quot;)
+abline(h = 0.5, col = &quot;sienna&quot;, lty = 3)</code></pre>
+<p><img src="content.en/docs/Lecture Notes/table-of-contents/02-Survival01/02-Survival01_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+<div id="nelson-aalen-estimator" class="section level3">
+<h3>Nelson-Aalen estimator</h3>
+<pre class="r"><code>## Models
+result.fh &lt;- survfit(Surv(tt,cens)~1, conf.type=&quot;log-log&quot;, type=&quot;fh&quot;)
+
+## Table
+result.fh</code></pre>
+<pre><code>## Call: survfit(formula = Surv(tt, cens) ~ 1, conf.type = &quot;log-log&quot;, 
+##     type = &quot;fh&quot;)
+## 
+##      n events median 0.95LCL 0.95UCL
+## [1,] 6      3      6       2      NA</code></pre>
+<pre class="r"><code>summary(result.fh)</code></pre>
+<pre><code>## Call: survfit(formula = Surv(tt, cens) ~ 1, conf.type = &quot;log-log&quot;, 
+##     type = &quot;fh&quot;)
+## 
+##  time n.risk n.event survival std.err lower 95% CI upper 95% CI
+##     2      6       1    0.846   0.141        0.306        0.977
+##     4      5       1    0.693   0.180        0.229        0.913
+##     6      3       1    0.497   0.210        0.101        0.807</code></pre>
+<pre class="r"><code># Plots
+par(mfrow = c(1, 2))# Two panels, &quot;one row, two columns&quot;.
+plot(result.fh,
+     ylab = &quot;Survival probability&quot;,
+     xlab = &quot;Time&quot;,
+     mark.time = T,
+     main=&quot;NA survival curve&quot;)
+abline(h = 0.5, col = &quot;sienna&quot;, lty = 3)
+plot(result.fh,
+     ylab = &quot;Cumulative hazard&quot;,
+     xlab = &quot;Time&quot;,
+     mark.time = T,
+     fun=&quot;cumhaz&quot;,
+     main=&quot;NA cumulative hazard curve&quot;)
+abline(h = 0.5, col = &quot;sienna&quot;, lty = 3)</code></pre>
+<p><img src="content.en/docs/Lecture Notes/table-of-contents/02-Survival01/02-Survival01_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+</div>
+<div id="comparisons-by-groups" class="section level3">
+<h3>Comparisons by groups</h3>
+<pre class="r"><code>bysex &lt;- survfit(Surv(enter, exit, event) ~ sex,
+                    data=child,
+                    conf.type=&quot;log-log&quot;)
+
+## Tables
+#bysex
+#summary(bysex)
+summary(bysex, times=c(0, 3, 6, 9, 12, 15)) # add time points</code></pre>
+<pre><code>## Call: survfit(formula = Surv(enter, exit, event) ~ sex, data = child, 
+##     conf.type = &quot;log-log&quot;)
+## 
+##                 sex=male 
+##  time n.risk n.event survival std.err lower 95% CI upper 95% CI
+##     0  13676       0    1.000 0.00000        1.000        1.000
+##     3  11614    1924    0.859 0.00298        0.853        0.865
+##     6  10955     555    0.818 0.00331        0.811        0.824
+##     9  10653     240    0.800 0.00344        0.793        0.806
+##    12  10452     146    0.789 0.00351        0.782        0.795
+##    15  10269     120    0.780 0.00356        0.773        0.786
+## 
+##                 sex=female 
+##  time n.risk n.event survival std.err lower 95% CI upper 95% CI
+##     0  12898       0    1.000 0.00000        1.000        1.000
+##     3  11152    1611    0.875 0.00292        0.869        0.880
+##     6  10578     501    0.835 0.00328        0.829        0.842
+##     9  10262     242    0.816 0.00343        0.809        0.823
+##    12  10079     129    0.806 0.00350        0.799        0.813
+##    15   9872     148    0.794 0.00358        0.787        0.801</code></pre>
+<pre class="r"><code>## plots
+plot(bysex,
+     ylab = &quot;Survival probabilities&quot;,
+     xlab = &quot;Survival time&quot;,
+     #mark.time = T,
+     main=&quot;Kaplan-Meier survival curve estimate with 95% CIs&quot;
+     )
+legend(&quot;topright&quot;, c(&quot;Male&quot;,&quot;Female&quot;),
+lty=c(&quot;solid&quot;,&quot;dashed&quot;), col=c(&quot;black&quot;,&quot;red&quot;))</code></pre>
+<p><img src="content.en/docs/Lecture Notes/table-of-contents/02-Survival01/02-Survival01_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+</div>
+<div id="better-km-figures" class="section level3">
+<h3>Better KM figures</h3>
+<pre class="r"><code>library(ggfortify)
+library(ggplot2)
+
+autoplot(bysex,
+     ylab = &quot;Survival probabilities&quot;,
+     xlab = &quot;Survival time&quot;,
+     #mark.time = T,
+     main=&quot;Kaplan-Meier survival curve estimate with 95% CIs&quot;
+     )</code></pre>
+<p><img src="content.en/docs/Lecture Notes/table-of-contents/02-Survival01/02-Survival01_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+</div>
+<div id="nonparametric-models-using-a-child-dataset-from-eha" class="section level3">
+<h3>Nonparametric models using a <span class="math inline">\(child\)</span> dataset from eha</h3>
+<pre class="r"><code>## Plots
+par(mfrow = c(1, 2))# Two panels, &quot;one row, two columns&quot;.
+with(child, plot(Surv(enter, exit, event), fun = &quot;cumhaz&quot;, 
+                main = &quot;Cumulativa hazards function&quot;,
+                xlab = &quot;Duration&quot;))
+with(child, plot(Surv(enter, exit, event),
+                main = &quot;Survival function&quot;,
+                xlab = &quot;Duration&quot;))</code></pre>
+<p><img src="content.en/docs/Lecture Notes/table-of-contents/02-Survival01/02-Survival01_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+</div>
+</div>
+<div id="proportional-hazards-and-cox-regression" class="section level2">
+<h2>Proportional Hazards and Cox Regression</h2>
+<pre class="r"><code>cox01 &lt;- coxreg(Surv(enter, exit, event) ~ sex + socBranch + birthdate, 
+              data = child)
+
+print(summary(cox01), digits = 4)</code></pre>
+<pre><code>## Covariate             Mean       Coef     Rel.Risk   S.E.    LR p
+## sex                                                         0.0019 
+##             male      0.510     0         1 (reference)
+##           female      0.490    -0.083     0.920     0.027
+## socBranch                                                   0.0001 
+##         official      0.021     0         1 (reference)
+##          farming      0.710    -0.017     0.983     0.092
+##         business      0.011     0.330     1.391     0.141
+##           worker      0.258     0.099     1.104     0.094
+## birthdate        1869-07-13    -0.000     1.000     0.000   0.0000 
+## 
+## Events                    5616 
+## Total time at risk        325030 
+## Max. log. likelihood      -56481 
+## LR test statistic         67.10 
+## Degrees of freedom        5 
+## Overall p-value           4.11227e-13</code></pre>
+<pre class="r"><code>child$cohort &lt;- floor(toTime(child$birthdate)) # age cohort
+
+cox02 &lt;- coxreg(Surv(enter, exit, event) ~ sex + socBranch + cohort, 
+              data = child)
+
+
+print(summary(cox02), digits = 4)</code></pre>
+<pre><code>## Covariate             Mean       Coef     Rel.Risk   S.E.    LR p
+## sex                                                         0.0018 
+##             male      0.510     0         1 (reference)
+##           female      0.490    -0.083     0.920     0.027
+## socBranch                                                   0.0001 
+##         official      0.021     0         1 (reference)
+##          farming      0.710    -0.017     0.984     0.092
+##         business      0.011     0.330     1.390     0.141
+##           worker      0.258     0.099     1.104     0.094
+## cohort             1869.035    -0.008     0.992     0.001   0.0000 
+## 
+## Events                    5616 
+## Total time at risk        325030 
+## Max. log. likelihood      -56481 
+## LR test statistic         66.79 
+## Degrees of freedom        5 
+## Overall p-value           4.75731e-13</code></pre>
+<pre class="r"><code>range(child$cohort)</code></pre>
+<pre><code>## [1] 1850 1884</code></pre>
+<pre class="r"><code>child$cohort &lt;- child$cohort - 1860
+cox03 &lt;- coxreg(Surv(enter, exit, event) ~ sex + socBranch + cohort, 
+               data = child)
+
+# Table
+summary(cox03)</code></pre>
+<pre><code>## Covariate             Mean       Coef     Rel.Risk   S.E.    LR p
+## sex                                                          0.002 
+##             male      0.510     0         1 (reference)
+##           female      0.490    -0.083     0.920     0.027
+## socBranch                                                    0.000 
+##         official      0.021     0         1 (reference)
+##          farming      0.710    -0.017     0.984     0.092
+##         business      0.011     0.330     1.390     0.141
+##           worker      0.258     0.099     1.104     0.094
+## cohort                9.035    -0.008     0.992     0.001    0.000 
+## 
+## Events                    5616 
+## Total time at risk        325030 
+## Max. log. likelihood      -56481 
+## LR test statistic         66.79 
+## Degrees of freedom        5 
+## Overall p-value           4.75731e-13</code></pre>
+<pre class="r"><code># Plots
+par(mfrow = c(1, 2), las = 1)
+plot(cox03, 
+     fn = &quot;cum&quot;, main = &quot;&quot;, 
+     #xlab=&quot;Duration (year)&quot;, 
+     ylab=&quot;hazard&quot;,
+     #xlim=c(0, 1) 
+     #ylim=c(ymin, ymax)
+     )
+plot(cox03, 
+     fn = &quot;sur&quot;, main = &quot;&quot;, 
+     #xlab=&quot;Duration (year)&quot;, 
+     ylab=&quot;hazard&quot;,
+     #xlim=c(0, 1) 
+     #ylim=c(ymin, ymax)
+     )</code></pre>
+<p><img src="content.en/docs/Lecture Notes/table-of-contents/02-Survival01/02-Survival01_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<div id="a-visual-check-for-a-proportionality-assumption" class="section level3">
+<h3>A visual check for a proportionality assumption</h3>
+<pre class="r"><code>library(survival)
+
+## Create survival vector for fish dataset
+child$SurvObj &lt;- with(child, Surv(enter, exit, event))
+
+par(mfrow = c(1, 2), las = 1)
+plot(survfit(SurvObj ~ sex, data=child), 
+     main = &quot;Proportional hazard by sex&quot;, 
+     ylab = &quot;Survival&quot;,
+     col=c(&quot;black&quot;, &quot;red&quot;)
+     )
+plot(survfit(SurvObj ~ sex, data=child), 
+     fun = &quot;cloglog&quot;,
+     ylab = &quot;Log-log survival&quot;,
+     main = &quot;Proportional hazard by sex&quot;, 
+     col=c(&quot;black&quot;, &quot;red&quot;)
+     )</code></pre>
+<p><img src="content.en/docs/Lecture Notes/table-of-contents/02-Survival01/02-Survival01_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<pre class="r"><code>library(survival)
+
+## Create survival vector for fish dataset
+child$SurvObj &lt;- with(child, Surv(enter, exit, event))
+
+par(mfrow = c(1, 2), las = 1)
+plot(survfit(SurvObj ~ socBranch, data=child), 
+     main = &quot;Proportional hazard by sex&quot;, 
+     ylab = &quot;Survival&quot;,
+     col=c(&quot;black&quot;, &quot;red&quot;, &quot;green&quot;, &quot;blue&quot;)
+     )
+plot(survfit(SurvObj ~ socBranch, data=child), 
+     fun = &quot;cloglog&quot;,
+     ylab = &quot;Log-log survival&quot;,
+     main = &quot;Proportional hazard by sex&quot;, 
+     col=c(&quot;black&quot;, &quot;red&quot;, &quot;green&quot;, &quot;blue&quot;)
+     )</code></pre>
+<p><img src="content.en/docs/Lecture Notes/table-of-contents/02-Survival01/02-Survival01_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+</div>
+</div>
+<div id="parametric-estimation" class="section level2">
+<h2>Parametric estimation</h2>
+<div id="weibull-model" class="section level3">
+<h3>Weibull model</h3>
+<pre class="r"><code># Models
+parm_weib &lt;- phreg(Surv(enter, exit, event) ~ sex + socBranch + cohort , 
+              dist = &quot;weibull&quot;,
+              data = child)
+
+# Table
+#print(summary(parm), digits = 4)
+parm_weib</code></pre>
+<pre><code>## Call:
+## phreg(formula = Surv(enter, exit, event) ~ sex + socBranch + 
+##     cohort, data = child, dist = &quot;weibull&quot;)
+## 
+## Covariate          W.mean      Coef Exp(Coef)  se(Coef)    Wald p
+## sex 
+##             male    0.510     0         1           (reference)
+##           female    0.490    -0.083     0.920     0.027     0.002 
+## socBranch 
+##         official    0.021     0         1           (reference)
+##          farming    0.710    -0.026     0.975     0.092     0.780 
+##         business    0.011     0.332     1.393     0.141     0.019 
+##           worker    0.258     0.092     1.097     0.094     0.329 
+## cohort              9.035    -0.008     0.992     0.001     0.000 
+## 
+## log(scale)                    5.887               0.228     0.000 
+## log(shape)                   -0.880               0.013     0.000 
+## 
+## Events                    5616 
+## Total time at risk        325030 
+## Max. log. likelihood      -25131 
+## LR test statistic         68.69 
+## Degrees of freedom        5 
+## Overall p-value           1.91736e-13</code></pre>
+<pre class="r"><code># Plots
+par(mfrow = c(1, 2), las = 1)
+plot(parm_weib, 
+     fn = &quot;cum&quot;, main = &quot;&quot;, 
+     #xlab=&quot;Duration (year)&quot;, 
+     ylab=&quot;hazard&quot;,
+     #xlim=c(0, 1) 
+     #ylim=c(ymin, ymax)
+     )
+plot(parm_weib, 
+     fn = &quot;sur&quot;, main = &quot;&quot;, 
+     #xlab=&quot;Duration (year)&quot;, 
+     ylab=&quot;Survival&quot;,
+     #xlim=c(0, 1) 
+     #ylim=c(ymin, ymax)
+     )</code></pre>
+<p><img src="content.en/docs/Lecture Notes/table-of-contents/02-Survival01/02-Survival01_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+</div>
+<div id="gompertz-model" class="section level3">
+<h3>Gompertz model</h3>
+<pre class="r"><code># Models
+parm_gomp &lt;- phreg(Surv(enter, exit, event) ~ sex + socBranch + cohort , 
+              dist = &quot;gompertz&quot;,
+              data = child)
+
+# Table
+#print(summary(parm), digits = 4)
+parm_gomp</code></pre>
+<pre><code>## Call:
+## phreg(formula = Surv(enter, exit, event) ~ sex + socBranch + 
+##     cohort, data = child, dist = &quot;gompertz&quot;)
+## 
+## Covariate          W.mean      Coef Exp(Coef)  se(Coef)    Wald p
+## sex 
+##             male    0.510     0         1           (reference)
+##           female    0.490    -0.087     0.916 NA        NA        
+## socBranch 
+##         official    0.021     0         1           (reference)
+##          farming    0.710    -0.064     0.938 NA        NA        
+##         business    0.011     0.349     1.417 NA        NA        
+##           worker    0.258     0.066     1.068 NA        NA        
+## cohort              9.035    -0.008     0.992 NA        NA        
+## 
+## log(scale)                  401.049           NA        NA        
+## log(shape)                  397.124           NA        NA        
+## 
+## Events                    5616 
+## Total time at risk        325030 
+## Max. log. likelihood      -28368 
+## LR test statistic         78.89 
+## Degrees of freedom        5 
+## Overall p-value           1.44329e-15</code></pre>
+<pre class="r"><code># Plots
+par(mfrow = c(1, 2), las = 1)
+plot(parm_gomp, 
+     fn = &quot;cum&quot;, main = &quot;&quot;, 
+     #xlab=&quot;Duration (year)&quot;, 
+     ylab=&quot;hazard&quot;,
+     #xlim=c(0, 1) 
+     #ylim=c(ymin, ymax)
+     )
+plot(parm_gomp, 
+     fn = &quot;sur&quot;, main = &quot;&quot;, 
+     #xlab=&quot;Duration (year)&quot;, 
+     ylab=&quot;Survival&quot;,
+     #xlim=c(0, 1) 
+     #ylim=c(ymin, ymax)
+     )</code></pre>
+<p><img src="content.en/docs/Lecture Notes/table-of-contents/02-Survival01/02-Survival01_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+</div>
+</div>
+</div>

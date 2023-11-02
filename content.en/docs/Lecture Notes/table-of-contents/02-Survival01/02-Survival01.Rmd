@@ -1,3 +1,8 @@
+---
+title: Survival
+weight: 1
+---
+
 # Survival Analyses: Introduction 
 
 ## Set packages and library
