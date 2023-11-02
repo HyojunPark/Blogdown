@@ -1,3 +1,8 @@
+---
+title: Survival Analysis 02
+weight: 1
+---
+
 # Survival Analyses: Introduction 
 
 ## Set packages and library

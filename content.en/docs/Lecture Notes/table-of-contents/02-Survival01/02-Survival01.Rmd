@@ -1,5 +1,5 @@
 ---
-title: Survival
+title: Survival Analysis 02
 weight: 1
 ---
 
