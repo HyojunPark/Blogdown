@@ -1,5 +1,5 @@
 baseURL: https://example.com/
-title: Hugo Book
+title: Hyojun Park's Blog (In progress)
 theme: hugo-book
 disablePathToLower: yes
 enableGitInfo: yes
@@ -14,14 +14,14 @@ languages:
     contentDir: content.en
     languageName: English
     weight: 1
-  ru:
-    contentDir: content.ru
-    languageName: Russian
-    weight: 2
-  zh:
-    contentDir: content.zh
-    languageName: Chinese
-    weight: 3
+#  ru:
+#    contentDir: content.ru
+#    languageName: Russian
+#    weight: 2
+#  zh:
+#    contentDir: content.zh
+#    languageName: Chinese
+#    weight: 3
 menu:
   after:
     - name: Github
