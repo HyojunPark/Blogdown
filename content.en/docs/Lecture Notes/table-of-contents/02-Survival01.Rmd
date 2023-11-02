@@ -1,0 +1,305 @@
+# Survival Analyses: Introduction 
+
+## Set packages and library
+
+```{r, include=FALSE}
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(eha)
+library(survival)
+library(data.table)
+library(flextable)
+library(survminer)
+library(ggfortify)
+library(ggplot2)
+library(data.table)
+```
+
+## dataset
+
+The **child** dataset in **eha** package
+
+```{r}
+summary(child) # descriptive statistics
+str(child) # structure
+head(child) # preview
+```
+
+## Nonparametric estimation
+
+### Data for nonparametric models
+
+The following code creates a set of vector for survival analysis. It contains 5 individuals' survival time. $1$ is an event (i.e., failure, death) and $0$ is a cencored case.
+
+```{r}
+tt <- c(7,6,6,5,2,4)
+cens <- c(0,1,0,0,1,1)
+
+Surv(tt,cens)
+aaa <- Surv(tt,cens) # demonstration only for checking how survival dataset was constructed
+
+aaa
+```
+
+### Kaplan-Meier estimator
+
+```{r}
+## Models
+result.km <- survfit(Surv(tt,cens)~1,
+                     conf.type="log-log")
+
+## Table
+result.km
+summary(result.km)
+
+## Plots
+par(mfrow = c(1, 2))# Two panels, "one row, two columns".
+plot(result.km,
+     ylab = "Survival probability",
+     xlab = "Time",
+     mark.time = T,
+     main="KM survival curve")
+abline(h = 0.5, col = "sienna", lty = 3)
+plot(result.km,
+     ylab = "Cumulative hazard",
+     xlab = "Time",
+     mark.time = T,
+     fun="cumhaz",
+     main="KM cumulative hazard curve")
+abline(h = 0.5, col = "sienna", lty = 3)
+```
+
+### Nelson-Aalen estimator
+
+```{r}
+
+## Models
+result.fh <- survfit(Surv(tt,cens)~1, conf.type="log-log", type="fh")
+
+## Table
+result.fh
+summary(result.fh)
+
+# Plots
+par(mfrow = c(1, 2))# Two panels, "one row, two columns".
+plot(result.fh,
+     ylab = "Survival probability",
+     xlab = "Time",
+     mark.time = T,
+     main="NA survival curve")
+abline(h = 0.5, col = "sienna", lty = 3)
+plot(result.fh,
+     ylab = "Cumulative hazard",
+     xlab = "Time",
+     mark.time = T,
+     fun="cumhaz",
+     main="NA cumulative hazard curve")
+abline(h = 0.5, col = "sienna", lty = 3)
+```
+
+### Comparisons by groups
+
+```{r}
+bysex <- survfit(Surv(enter, exit, event) ~ sex,
+                    data=child,
+                    conf.type="log-log")
+
+## Tables
+#bysex
+#summary(bysex)
+summary(bysex, times=c(0, 3, 6, 9, 12, 15)) # add time points
+
+## plots
+plot(bysex,
+     ylab = "Survival probabilities",
+     xlab = "Survival time",
+     #mark.time = T,
+     main="Kaplan-Meier survival curve estimate with 95% CIs"
+     )
+legend("topright", c("Male","Female"),
+lty=c("solid","dashed"), col=c("black","red"))
+```
+
+### Better KM figures
+
+```{r}
+library(ggfortify)
+library(ggplot2)
+
+autoplot(bysex,
+     ylab = "Survival probabilities",
+     xlab = "Survival time",
+     #mark.time = T,
+     main="Kaplan-Meier survival curve estimate with 95% CIs"
+     )
+```
+
+### Nonparametric models using a $child$ dataset from eha
+
+```{r}
+
+## Plots
+par(mfrow = c(1, 2))# Two panels, "one row, two columns".
+with(child, plot(Surv(enter, exit, event), fun = "cumhaz", 
+                main = "Cumulativa hazards function",
+                xlab = "Duration"))
+with(child, plot(Surv(enter, exit, event),
+                main = "Survival function",
+                xlab = "Duration"))
+```
+
+## Proportional Hazards and Cox Regression
+
+```{r}
+cox01 <- coxreg(Surv(enter, exit, event) ~ sex + socBranch + birthdate, 
+              data = child)
+
+print(summary(cox01), digits = 4)
+```
+
+```{r}
+child$cohort <- floor(toTime(child$birthdate)) # age cohort
+
+cox02 <- coxreg(Surv(enter, exit, event) ~ sex + socBranch + cohort, 
+              data = child)
+
+
+print(summary(cox02), digits = 4)
+```
+
+```{r}
+range(child$cohort)
+```
+
+```{r}
+child$cohort <- child$cohort - 1860
+cox03 <- coxreg(Surv(enter, exit, event) ~ sex + socBranch + cohort, 
+               data = child)
+
+# Table
+summary(cox03)
+
+# Plots
+par(mfrow = c(1, 2), las = 1)
+plot(cox03, 
+     fn = "cum", main = "", 
+     #xlab="Duration (year)", 
+     ylab="hazard",
+     #xlim=c(0, 1) 
+     #ylim=c(ymin, ymax)
+     )
+plot(cox03, 
+     fn = "sur", main = "", 
+     #xlab="Duration (year)", 
+     ylab="hazard",
+     #xlim=c(0, 1) 
+     #ylim=c(ymin, ymax)
+     )
+```
+
+### A visual check for a proportionality assumption
+
+```{r}
+library(survival)
+
+## Create survival vector for fish dataset
+child$SurvObj <- with(child, Surv(enter, exit, event))
+
+par(mfrow = c(1, 2), las = 1)
+plot(survfit(SurvObj ~ sex, data=child), 
+     main = "Proportional hazard by sex", 
+     ylab = "Survival",
+     col=c("black", "red")
+     )
+plot(survfit(SurvObj ~ sex, data=child), 
+     fun = "cloglog",
+     ylab = "Log-log survival",
+     main = "Proportional hazard by sex", 
+     col=c("black", "red")
+     )
+```
+
+```{r}
+library(survival)
+
+## Create survival vector for fish dataset
+child$SurvObj <- with(child, Surv(enter, exit, event))
+
+par(mfrow = c(1, 2), las = 1)
+plot(survfit(SurvObj ~ socBranch, data=child), 
+     main = "Proportional hazard by sex", 
+     ylab = "Survival",
+     col=c("black", "red", "green", "blue")
+     )
+plot(survfit(SurvObj ~ socBranch, data=child), 
+     fun = "cloglog",
+     ylab = "Log-log survival",
+     main = "Proportional hazard by sex", 
+     col=c("black", "red", "green", "blue")
+     )
+```
+
+## Parametric estimation
+
+### Weibull model
+
+```{r}
+# Models
+parm_weib <- phreg(Surv(enter, exit, event) ~ sex + socBranch + cohort , 
+              dist = "weibull",
+              data = child)
+
+# Table
+#print(summary(parm), digits = 4)
+parm_weib
+
+# Plots
+par(mfrow = c(1, 2), las = 1)
+plot(parm_weib, 
+     fn = "cum", main = "", 
+     #xlab="Duration (year)", 
+     ylab="hazard",
+     #xlim=c(0, 1) 
+     #ylim=c(ymin, ymax)
+     )
+plot(parm_weib, 
+     fn = "sur", main = "", 
+     #xlab="Duration (year)", 
+     ylab="Survival",
+     #xlim=c(0, 1) 
+     #ylim=c(ymin, ymax)
+     )
+```
+
+### Gompertz model
+
+```{r}
+# Models
+parm_gomp <- phreg(Surv(enter, exit, event) ~ sex + socBranch + cohort , 
+              dist = "gompertz",
+              data = child)
+
+# Table
+#print(summary(parm), digits = 4)
+parm_gomp
+
+# Plots
+par(mfrow = c(1, 2), las = 1)
+plot(parm_gomp, 
+     fn = "cum", main = "", 
+     #xlab="Duration (year)", 
+     ylab="hazard",
+     #xlim=c(0, 1) 
+     #ylim=c(ymin, ymax)
+     )
+plot(parm_gomp, 
+     fn = "sur", main = "", 
+     #xlab="Duration (year)", 
+     ylab="Survival",
+     #xlim=c(0, 1) 
+     #ylim=c(ymin, ymax)
+     )
+```
+
+
